@@ -1,0 +1,111 @@
+<!DOCTYPE HTML!>
+<html>
+<head>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+  body {
+    shape-rendering: crispEdges;
+  }
+  circle {
+    opacity: 0.5;
+    stroke: black;
+  }
+  </style>
+  <script type="text/javascript">
+
+      function draw(data) {
+        "use strict";
+        var margin = 75,
+            height = 600 - margin,
+            width = 1400 - margin,
+            radius = 3,
+            colour_1 = 'blue',
+            colour_2 = 'red',
+            colour_3 = 'orange',
+            colour_4 = 'green';
+
+        var svg = d3.select('body')
+                      .append('svg')
+                        .attr('height', height)
+                        .attr('width', width)
+                      .append('g')
+                        .attr('class','chart');
+
+        //map data to circles
+        d3.select('.chart')
+          .selectAll('circle')
+          .data(data)
+          .enter()
+          .append('circle');
+
+      //setting x axis scale
+      var x_extent = d3.extent(data, function(d) {
+        return d['tenure'];
+      });
+      var x_scale = d3.scaleLinear().domain(x_extent)
+                  .range([margin,width]);
+      //setting y axis scale
+      var y_extent = d3.extent(data, function(d) {
+        return d['mean_prop'];
+      });
+      var y_scale = d3.scaleLinear().domain(y_extent)
+                  .range([height-30,margin]);
+
+      // Draw scales
+
+      var x_axis = d3.axisBottom().scale(x_scale).ticks(d3.count);
+      var y_axis = d3.axisLeft().scale(y_scale).ticks(d3.count);
+
+      d3.select('.chart')
+      .append('g')
+      .attr('class','x axis')
+      .attr('transform','translate(0,'+ (height - 30) +')')
+      .call(x_axis);
+
+      d3.select('.chart')
+      .append('g')
+      .attr('class','y axis')
+      .attr('transform','translate('+ margin +',0)')
+      .call(y_axis);
+
+      //plot circles
+
+      d3.select('.chart')
+        .selectAll('circle')
+        .attr('cx',function(d) {
+          return x_scale(d['tenure']);
+        })
+        .attr('cy',function(d){
+          return y_scale(d['mean_prop']);
+        })
+        .attr('r', radius)
+        .attr('fill', function(d) {
+          switch (d['year_joined.bucket']) {
+          case '(2004,2009]': return colour_1;
+          break;
+          case '(2009,2011]': return colour_2;
+          break;
+          case '(2011,2012]': return colour_3;
+          break;
+          case '(2012,2014]': return colour_4;
+          break;
+          default: 'white';
+        };
+        });
+
+
+      };
+  </script>
+</head>
+<body>
+  <script type="text/javascript">
+
+  d3.csv('mean_prop.csv',function(d) {
+    d['mean_prop'] = +d['mean_prop'];
+    d['tenure'] = +d['tenure'];
+    return d;
+  },draw);
+
+  </script>
+</body>
+</html>
